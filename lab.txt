@@ -78,4 +78,18 @@ sum(rowMeans(ratings_movies_norm)>0.00001)
 image(ratings_movies_norm[rowCounts(ratings_movies_norm)>top_two_movies,
                            colCounts(ratings_movies_norm)>top_two_users],
       main = "Heat map of top users and movies")
+average_rating_per_user <- rowMeans(ratings_movies)
+qplot(average_rating_per_user) + stat_bin(binwidth = 0.1) +
+  ggtitle("Distribution of the average per user")
+ratings_movies_norm <- normalize(ratings_movies)
+sum(rowMeans(ratings_movies_norm)>0.00001)
+image(ratings_movies_norm[rowCounts(ratings_movies_norm)>top_two_movies,
+                           colCounts(ratings_movies_norm)>top_two_users],
+      main = "Heat map of top users and movies")
+rating_movies_wacthed <- binarize(ratings_movies, minRating=1)
+min_movies_binary <- quantile(rowCounts(ratings_movies), 0.95)
+min_user_binary <- quantile(colCounts(ratings_movies), 0.95)
+image(rating_movies_wacthed[rowCounts(ratings_movies)>min_movies_binary,
+                            colCounts(ratings_movies)>min_user_binary],
+      main = "Heatmap of top users and movies")
 
