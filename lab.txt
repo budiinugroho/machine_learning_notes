@@ -1,0 +1,81 @@
+###Used Packages
+install.packages("recommenderlab")
+library(recommenderlab)
+library(ggplot2)
+###Load Data
+set.seed(1)
+data_package <- data(package="recommenderlab")
+data_package$results[, "Item"]
+data(MovieLense)
+class(MovieLense)
+str(MovieLense)
+###Lab 1. Computing the Similarity Matrix
+similarity_users <- similarity(MovieLense[1:4, ],
+                              method = "cosine",
+                              which = "users")
+as.matrix(similarity_users)
+image(as.matrix(similarity_users), main = "User similarity")
+###
+similarity_users <- similarity(MovieLense[1:20, ],
+                               method = "cosine",
+                               which = "users")
+as.matrix(similarity_users)
+image(as.matrix(similarity_users), main = "User similarity")
+###
+similarity_items <- similarity(MovieLense[, 1:4], 
+                               method = "cosine", 
+                               which = "items")
+as.matrix(similarity_items)
+image(as.matrix(similarity_items), main = "Items similarity")
+###Lab 2. Recommendation Models.
+recommender_models <- recommenderRegistry$get_entries(dataType = "realRatingMatrix")
+names(recommender_models)
+lapply(recommender_models, "[[", "description")
+recommender_models$IBCF_realRatingMatrix$parameters
+recommender_models$UBCF_realRatingMatrix$parameters
+recommender_models$POPULAR_realRatingMatrix$parameters
+###Lab 3. Data Exploration
+dim(MovieLense)
+slotNames(MovieLense)
+class(MovieLense@data)
+dim(MovieLense@data)
+vector_ratings <- as.vector(MovieLense@data)
+unique(vector_ratings)
+table_ratings <- table(vector_ratings)
+table_ratings
+vector_ratings <- vector_ratings[vector_ratings !=0]
+vector_ratings <- factor(vector_ratings)
+qplot(vector_ratings) + ggtitle("Distribution of the ratings")
+views_per_movie <- colCounts(MovieLense)
+table_views <- data.frame(movie = names(views_per_movie),
+                          views = views_per_movie)
+table_views <- table_views[order(table_views$views,
+                                 decreasing = TRUE), ]
+ggplot(table_views[1:6, ], aes(x = movie, y = views)) +
+  geom_bar(stat="identity") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  ggtitle("Number of views of the top movies") 
+average_ratings <- colMeans(MovieLense)
+qplot(average_ratings) +
+  stat_bin(binwidth = 0.1) +
+  ggtitle("Distribution of the average movie rating")
+###Lab 4. Data Preparation
+###Exercise 4.1:
+ratings_movies <- MovieLense[rowCounts(MovieLense)>50, colCounts(MovieLense)>100]
+ratings_movies
+clement_movies <- MovieLense[rowCounts(MovieLense)>50]
+clement_movies
+top_two_movies <- quantile(rowCounts(ratings_movies),0.98)
+top_two_users <- quantile(colCounts(ratings_movies),0.98)
+image(ratings_movies[rowCounts(ratings_movies)>top_two_movies,
+                     colCounts(ratings_movies)>top_two_users],
+      main = "Heat map of top users and movies")
+average_rating_per_user <- rowMeans(ratings_movies)
+qplot(average_rating_per_user) + stat_bin(binwidth = 0.1) +
+  ggtitle("Distribution of the average per user")
+ratings_movies_norm <- normalize(ratings_movies)
+sum(rowMeans(ratings_movies_norm)>0.00001)
+image(ratings_movies_norm[rowCounts(ratings_movies_norm)>top_two_movies,
+                           colCounts(ratings_movies_norm)>top_two_users],
+      main = "Heat map of top users and movies")
+
